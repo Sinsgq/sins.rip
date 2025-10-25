@@ -1,37 +1,222 @@
+// Use assets/0.mp4 through assets/4.mp4 (relative to index.html)
+const videos = Array.from({ length: 5 }, (_, i) => `assets/${i}.mp4`);
+
+// Map numeric assets/0..assets/4 to human-friendly titles.
+const labels = [
+    "LUCKI & Lil Yachty - I Don't Care...", // 0
+    "LUCKI - GOODFELLAS",                   // 1
+    "LUCKI - 13",                           // 2
+    "LUCKI - Y NOT?",                       // 3
+    "LUCKI - Heavy On My Heart"             // 4
+];
+
+// State to avoid immediate repeats
+let lastIdx = null;
+let endedHandlerAdded = false;
+
+const video = document.getElementById('background-video');
+const scrollingText = document.getElementById('scrolling-text');
+// Controller elements (may be hidden until main content is shown)
+const prevBtn = document.getElementById('prev-video');
+const nextBtn = document.getElementById('next-video');
+const selectEl = document.getElementById('video-select');
+const volumeSlider = document.getElementById('volume-slider');
+// set initial volume
+try { video.volume = 0.5; } catch (e) {}
+
+function pickRandomIndex() {
+    if (videos.length <= 1) return 0;
+    let idx;
+    do {
+        idx = Math.floor(Math.random() * videos.length);
+    } while (idx === lastIdx);
+    return idx;
+}
+
+function playIndex(idx) {
+    lastIdx = idx;
+    const chosen = videos[idx];
+    const src = encodeURI('./' + chosen);
+
+    const sourceEl = video.querySelector('source');
+    if (sourceEl) {
+        sourceEl.src = src;
+        video.load();
+    } else {
+        video.src = src;
+    }
+    
+    // Ensure video is unmuted when playing
+    video.muted = false;
+
+    const label = labels[idx] || chosen.split('/').pop().replace(/\.mp4$/i, '');
+    scrollingText.textContent = 'Playing: ' + label;
+
+    video.play().then(function() {
+        // Initialize audio reactive features after successful playback
+        initAudioReactive();
+    }).catch(function(err) {
+        console.warn('Video play prevented:', err);
+    });
+}
+
+function playNextRandom() {
+    const idx = pickRandomIndex();
+    playIndex(idx);
+}
+
 document.getElementById('enter-text').addEventListener('click', function() {
-const videoMap = new Map();
-const scrolltextMap = new Map();
-
-videoMap.set(0,"https://cdn.discordapp.com/attachments/1224928873230368918/1275867705311756368/YNW_Melly_YNW_BSlime__Ynw4L-_772_Love_Pt.3_Your_Love_Music_Video_ynwmelly_ynwbslime_yourlove.mp4?ex=66c773e5&is=66c62265&hm=db57250f7addd1bc0cc7872f440189df41ceae4e1e9837882725417f05ae99ad&") // Video 1
-scrolltextMap.set(0,"LUCKI & Lil Yachty - I Don't Care");
-
-videoMap.set(1,"https://cdn.discordapp.com/attachments/1224928873230368918/1275867703172661299/Lil_Yachty__Veeze_-_Sorry_Not_Sorry_Official_Music_Video.mp4?ex=66c773e4&is=66c62264&hm=6e932197e4421d35f1fbea52f21800399e79057c4f2be7dc25174130a63ea584&") // Video 2
-scrolltextMap.set(1,"LUCKI - GOODFELLAS");
-
-videoMap.set(2,"https://cdn.discordapp.com/attachments/1224928873230368918/1275867708914663537/Luh_Tyler_-_Young_N_____Official_Music_Video.mp4?ex=66c773e6&is=66c62266&hm=0f0d38e7557414beea400a7d9c8a8e5cd5e78291258853d1ef375398d0ffa142&") // Video 3
-scrolltextMap.set(2,"LUCKI - 13");
-
-videoMap.set(3,"https://cdn.discordapp.com/attachments/1224928873230368918/1275867712463179997/Babyfxce_E_-_PTP_Official_Music_Video.mp4?ex=66c773e7&is=66c62267&hm=2aaf1c4012dd793165f2c57f06869c5dcd5ad747cca26b3fa131e985b9c7e2de&") // Video 4
-scrolltextMap.set(3,"LUCKI - Y NOT?");
-
-videoMap.set(4,"https://cdn.discordapp.com/attachments/1224928873230368918/1275867715793457193/LUCKI_-_GOODFELLAS_Official_Video.mp4?ex=66c773e7&is=66c62267&hm=cd7370af514cea7ac7d9af585a21db2d758c13ed6afcc23f601e2a4529e09da3&") // Video 5
-scrolltextMap.set(4,"LUCKI - Heavy On My Heart");
-
-var randomNumberZeroToOne = Math.floor(Math.random()*5);
-var currentVideo = videoMap.get(randomNumberZeroToOne);
-var currentVideoScrollText = scrolltextMap.get(randomNumberZeroToOne);
-
-
     document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
+    
+    // Ensure audio context is created on user interaction
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
 
+    // Add ended handler once to auto-play another random video
+    if (!endedHandlerAdded) {
+        video.addEventListener('ended', function() {
+            playNextRandom();
+        });
+        endedHandlerAdded = true;
+    }
 
-    var video = document.getElementById('background-video');
-    var srollingText = document.getElementById('scrolling-text');
-
-    video.src = currentVideo; // sets random video
-    srollingText.textContent = "Playing: " + currentVideoScrollText;
-
-    video.volume = 0.05; // Set the volume to 25%
-    video.play();
+    // Start playback with a random video (avoiding immediate repeats)
+    playNextRandom();
 });
+
+// --- Controller wiring ---
+// Populate select with labels
+if (selectEl) {
+    labels.forEach((lbl, i) => {
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        opt.textContent = lbl;
+        selectEl.appendChild(opt);
+    });
+    // change handler
+    selectEl.addEventListener('change', function() {
+        const v = Number(this.value);
+        if (!Number.isNaN(v)) playIndex(v);
+    });
+}
+
+// Prev/Next buttons (sequential)
+if (prevBtn) prevBtn.addEventListener('click', function() {
+    const idx = (lastIdx === null) ? 0 : (lastIdx - 1 + videos.length) % videos.length;
+    playIndex(idx);
+});
+if (nextBtn) nextBtn.addEventListener('click', function() {
+    const idx = (lastIdx === null) ? 0 : (lastIdx + 1) % videos.length;
+    playIndex(idx);
+});
+
+// Volume slider
+if (volumeSlider) {
+    // set initial slider position
+    volumeSlider.value = String(video.volume || 0.5);
+    volumeSlider.addEventListener('input', function() {
+        const v = parseFloat(this.value);
+        if (!Number.isNaN(v)) video.volume = v;
+    });
+}
+
+// Ensure background scrollers are long enough to never show gaps.
+function ensureScrollerLengths() {
+    const inners = document.querySelectorAll('.sins-inner');
+    inners.forEach(inner => {
+        const containerWidth = inner.parentElement.clientWidth;
+        const firstText = inner.querySelector('.sins-text');
+        if (!firstText) return;
+        // Grow the content of the first text until it's at least the container width
+        const base = firstText.textContent;
+        // Avoid infinite loops; cap iterations
+        let attempts = 0;
+        while (firstText.offsetWidth < containerWidth && attempts < 10) {
+            firstText.textContent = firstText.textContent + '\u00A0' + base;
+            attempts++;
+        }
+        // Ensure there is a second identical copy for seamless loop
+        let copies = inner.querySelectorAll('.sins-text');
+        if (copies.length < 2) {
+            const clone = firstText.cloneNode(true);
+            inner.appendChild(clone);
+        } else {
+            // sync second copy
+            copies[1].textContent = firstText.textContent;
+        }
+    });
+}
+
+// run on load and resize (debounced)
+window.addEventListener('load', ensureScrollerLengths);
+let scResizeTimer = null;
+window.addEventListener('resize', function() {
+    clearTimeout(scResizeTimer);
+    scResizeTimer = setTimeout(ensureScrollerLengths, 150);
+});
+
+// Audio-reactive animation setup
+let audioCtx, analyzer, dataArray, animationId;
+const y2kImage = document.getElementById('image');
+
+function initAudioReactive() {
+    try {
+        if (audioCtx) return; // already initialized
+
+        console.log('Initializing audio reactive features...');
+        
+        // Create audio context and analyzer
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyzer = audioCtx.createAnalyser();
+        analyzer.fftSize = 256;
+        const bufferLength = analyzer.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+
+        // Connect video audio to analyzer
+        const source = audioCtx.createMediaElementSource(video);
+        source.connect(analyzer);
+        analyzer.connect(audioCtx.destination);
+
+        console.log('Audio context and analyzer set up successfully');
+
+        // Start animation loop
+        animateY2K();
+        console.log('Animation loop started');
+    } catch (error) {
+        console.error('Error initializing audio reactive features:', error);
+    }
+}
+
+function animateY2K() {
+    animationId = requestAnimationFrame(animateY2K);
+    
+    // Get frequency data
+    analyzer.getByteFrequencyData(dataArray);
+    
+    // Calculate average amplitude (focused on bass/mid frequencies)
+    let sum = 0;
+    const sampleSize = 20; // lower frequencies
+    for (let i = 0; i < sampleSize; i++) {
+        sum += dataArray[i];
+    }
+    const average = sum / sampleSize;
+    
+    // Map 0-255 amplitude to visual effects
+    const normalizedAmp = average / 255;
+    const minScale = 0.5;  // minimum scale
+    const maxScale = 0.65; // maximum scale (adjust these as needed)
+    const scale = minScale + (normalizedAmp * (maxScale - minScale));
+    
+    // Apply visual effects
+    if (y2kImage) {
+        // Scale and move based on amplitude
+        y2kImage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        // Fade opacity slightly with amplitude
+        y2kImage.style.opacity = 0.8 + (normalizedAmp * 0.2);
+        // Add a slight vertical bounce
+        const bounce = Math.sin(Date.now() / 200) * normalizedAmp * 10;
+        y2kImage.style.marginTop = `${bounce}px`;
+    }
+}
