@@ -73,6 +73,11 @@ document.getElementById('enter-text').addEventListener('click', function() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
+    
+    // Handle mobile-specific initialization
+    if (isMobile) {
+        handleVideoPlayback();
+    }
 
     // Add ended handler once to auto-play another random video
     if (!endedHandlerAdded) {
@@ -160,6 +165,51 @@ window.addEventListener('resize', function() {
 // Audio-reactive animation setup
 let audioCtx, analyzer, dataArray, animationId;
 const y2kImage = document.getElementById('image');
+
+// Mobile detection
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+// Handle mobile video playback
+function handleVideoPlayback() {
+    if (video.paused) {
+        video.play().then(() => {
+            video.muted = false;
+            initAudioReactive();
+        }).catch(err => {
+            console.warn('Playback failed:', err);
+            // If autoplay fails, show a play button
+            showPlayButton();
+        });
+    }
+}
+
+// Create and show play button if needed
+function showPlayButton() {
+    if (!document.getElementById('play-button')) {
+        const playBtn = document.createElement('button');
+        playBtn.id = 'play-button';
+        playBtn.innerHTML = '▶ Play';
+        playBtn.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            border-radius: 8px;
+            cursor: pointer;
+        `;
+        playBtn.addEventListener('click', () => {
+            handleVideoPlayback();
+            playBtn.remove();
+        });
+        document.body.appendChild(playBtn);
+    }
+}
 
 function initAudioReactive() {
     try {

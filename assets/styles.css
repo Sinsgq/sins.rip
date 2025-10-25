@@ -229,6 +229,62 @@ body {
     font-size: 12px;
 }
 
+/* Mobile-specific styles */
+@media screen and (max-width: 768px) {
+    #video-controller {
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.3);
+        padding: 8px;
+    }
+    
+    #video-controller button {
+        padding: 8px 12px;  /* Larger touch targets */
+        font-size: 16px;
+    }
+    
+    #video-controller select {
+        font-size: 14px;
+        padding: 6px;
+    }
+
+    #video-controller input[type="range"] {
+        width: 100px;  /* Slightly wider on mobile */
+    }
+    
+    #video-controller input[type="range"]::-webkit-slider-thumb {
+        width: 20px;  /* Larger touch target */
+        height: 20px;
+    }
+    
+    #video-controller input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+    }
+
+    #enter-text {
+        font-size: 24px;
+        padding: 15px;
+    }
+    
+    .sins-inner {
+        font-size: 1.5rem;  /* Smaller on mobile */
+    }
+    
+    #image {
+        transform: translate(-50%, -50%) scale(0.4);  /* Slightly smaller on mobile */
+    }
+
+    #scrolling-text-container {
+        left: 10%;
+        right: 10%;
+    }
+
+    #column-mask {
+        width: 30%;  /* Wider column mask on mobile */
+    }
+}
+
 #video-controller button {
     /* keep buttons slightly visible against the video */
     background: rgba(255,255,255,0.06);
