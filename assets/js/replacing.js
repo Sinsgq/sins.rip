@@ -1,8 +1,8 @@
 var textObjects = [
-    { text: "Discord", href: "dsg.gg/wrda" },
-    { text: "Instagram", href: "https://www.instagram.com/whiterose_driftalliance" },
-    { text: "Youtube", href: "https://www.youtube.com/@WhiteRose_DriftAlliance" },
-    { text: "Twitter", href: "https://x.com/WhiteRoseDrift" }
+    { text: "...", href: "" },
+    { text: "...", href: "" },
+    { text: "...", href: "" },
+    { text: "...", href: "" }
 ];
 var currentIndex = 0;
 var speed = 50; // typing speed in milliseconds

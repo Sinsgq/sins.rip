@@ -16,7 +16,7 @@ function loaded(){
 
 var x = 0;
 
-var titleText = [ "→ wrm.rip","⇉ wrm.rip","⇶ wrm.rip"];
+var titleText = [ "→ sins.rip","⇉ sins.rip","⇶ sins.rip"];
 
 function loop(){
 

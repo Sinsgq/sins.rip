@@ -169,10 +169,10 @@ body {
 
 #typing-container {
     position: fixed;
-    top: 30%;
+    top: 55%;
     left: 50%;
     text-align: center;
-    transform: translate(-30%, -50%);
+    transform: translate(-50%, -50%);
 }
 
 
@@ -194,9 +194,9 @@ body {
 
 #overlayText {
   position: absolute;
-  top: 65%; /* Adjust the top position as needed */
+  top: 52%; /* Adjust the top position as needed */
   left: 47.8%; /* Adjust the left position as needed */
-  color: rgb(255, 255, 255); /* Text color, adjust as needed */
+  color: white; /* Text color, adjust as needed */
   font-size: 18px; /* Text size, adjust as needed */
   font-weight: bold; /* Text weight, adjust as needed */
 }
